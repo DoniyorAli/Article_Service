@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"UacademyGo/Article/config"
-	"UacademyGo/Article/storage"
+	"UacademyGo/Blogpost/article_service/config"
+	"UacademyGo/Blogpost/article_service/storage"
 )
 
 type handler struct {

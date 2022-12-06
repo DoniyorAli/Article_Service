@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"UacademyGo/Article/models"
+	"UacademyGo/Blogpost/article_service/models"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"

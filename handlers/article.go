@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"UacademyGo/Article/models"
+	"UacademyGo/Blogpost/article_service/models"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -18,8 +18,8 @@ import (
 // @Accept      json
 // @Produce     json
 // @Param       article body models.CreateModelArticle true "article body"
-// @Success     201 {object} models.JSONRespons{data=models.Article} 
-// @Failure     400 {object} models.JSONErrorRespons                 
+// @Success     201 {object} models.JSONRespons{data=models.Article}
+// @Failure     400 {object} models.JSONErrorRespons
 // @Router      /v1/article [post]
 func (h *handler) CreateArticle(ctx *gin.Context) {
 	var body models.CreateModelArticle

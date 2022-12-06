@@ -1,7 +1,7 @@
 package postgres
 
 import (
-	"UacademyGo/Article/models"
+	"UacademyGo/Blogpost/article_service/models"
 	"errors"
 )
 
@@ -30,7 +30,7 @@ func (stg Postgres) AddAuthor(id string, box models.CreateModelAuthor) error {
 	return nil
 }
 
-//*=========================================================================
+// *=========================================================================
 func (stg Postgres) GetAuthorById(id string) (models.Author, error) {
 	var author models.Author
 	var tempMiddlename *string
@@ -60,7 +60,7 @@ func (stg Postgres) GetAuthorById(id string) (models.Author, error) {
 	return author, nil
 }
 
-//*=========================================================================
+// *=========================================================================
 func (stg Postgres) GetAuthorList(offset, limit int, search string) ([]models.Author, error) {
 	var res []models.Author
 	var tempMiddlename *string
@@ -107,7 +107,7 @@ func (stg Postgres) GetAuthorList(offset, limit int, search string) ([]models.Au
 	return res, err
 }
 
-//*=========================================================================
+// *=========================================================================
 func (stg Postgres) UpdateAuthor(box models.UpdateAuthorResponse) error {
 
 	res, err := stg.homeDB.NamedExec("UPDATE author  SET fullname=:f, middlename=:m, updated_at=now() WHERE deleted_at IS NULL AND id=:id", map[string]interface{}{
@@ -130,7 +130,7 @@ func (stg Postgres) UpdateAuthor(box models.UpdateAuthorResponse) error {
 	return errors.New("author not found")
 }
 
-//*=========================================================================
+// *=========================================================================
 func (stg Postgres) DeleteAuthor(id string) error {
 	res, err := stg.homeDB.Exec("UPDATE author SET deleted_at=now() WHERE id=$1 AND deleted_at IS NULL", id)
 	if err != nil {

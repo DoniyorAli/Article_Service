@@ -1,11 +1,11 @@
 package postgres
 
 import (
-	"UacademyGo/Article/models"
+	"UacademyGo/Blogpost/article_service/models"
 	"errors"
 )
 
-//*=========================================================================
+// *=========================================================================
 func (stg Postgres) AddNewArticle(id string, box models.CreateModelArticle) error {
 	var err error
 	_, err = stg.GetAuthorById(box.AuthorID)
@@ -35,7 +35,8 @@ func (stg Postgres) AddNewArticle(id string, box models.CreateModelArticle) erro
 	}
 	return nil
 }
-//*=========================================================================
+
+// *=========================================================================
 func (stg Postgres) GetArticleById(id string) (models.GetByIDArticleModel, error) {
 	var a models.GetByIDArticleModel
 
@@ -84,9 +85,10 @@ func (stg Postgres) GetArticleById(id string) (models.GetByIDArticleModel, error
 
 	return a, nil
 }
-//*=========================================================================
+
+// *=========================================================================
 func (stg Postgres) GetArticleList(offset, limit int, search string) (dataset []models.Article, err error) {
-	
+
 	rows, err := stg.homeDB.Queryx(`SELECT
 	id,
 	title,
@@ -123,7 +125,8 @@ func (stg Postgres) GetArticleList(offset, limit int, search string) (dataset []
 	}
 	return dataset, err
 }
-//*=========================================================================
+
+// *=========================================================================
 func (stg Postgres) UpdateArticle(box models.UpdateArticleResponse) error {
 	res, err := stg.homeDB.NamedExec("UPDATE article  SET title=:t, body=:b, updated_at=now() WHERE deleted_at IS NULL AND id=:id", map[string]interface{}{
 		"id": box.ID,
@@ -144,7 +147,8 @@ func (stg Postgres) UpdateArticle(box models.UpdateArticleResponse) error {
 	}
 	return errors.New("article not found")
 }
-//*=========================================================================
+
+// *=========================================================================
 func (stg Postgres) DeleteArticle(id string) error {
 	res, err := stg.homeDB.Exec("UPDATE article  SET deleted_at=now() WHERE id=$1 AND deleted_at IS NULL", id)
 	if err != nil {

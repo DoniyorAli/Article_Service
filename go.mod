@@ -1,4 +1,4 @@
-module UacademyGo/Article
+module UacademyGo/Blogpost/article_service
 
 go 1.19
 
