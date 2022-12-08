@@ -141,7 +141,7 @@ func (h *handler) GetArticleList(ctx *gin.Context) {
 // @Failure     400 {object} models.JSONErrorRespons
 // @Router      /v1/article [put]
 func (h *handler) UpdateArticle(ctx *gin.Context) {
-	var body models.UpdateArticleResponse
+	var body models.UpdateArticleModel
 	if err := ctx.ShouldBindJSON(&body); err != nil {
 		ctx.JSON(http.StatusBadRequest, models.JSONErrorRespons{Error: err.Error()})
 		return

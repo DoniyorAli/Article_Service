@@ -23,7 +23,7 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-func initGRPC() {
+func initGRPC(stg storage.StorageInter) {
 	println("gRPC server tutorial in Go")
 
 	listener, err := net.Listen("tcp", ":9000")
@@ -36,7 +36,7 @@ func initGRPC() {
 	authorService := &author.AuthorService{}
 	blogpost.RegisterAuthorServiceServer(srv, authorService)
 
-	articleService := &article.ArticleService{}
+	articleService := article.NewArticleService(stg)
 	blogpost.RegisterArticleServiceServer(srv, articleService)
 
 	reflection.Register(srv)
@@ -50,12 +50,8 @@ func initGRPC() {
 // * @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
 
 func main() {
-	initGRPC()
-
-	fmt.Println("=======================")
-
+	
 	cfg := config.Load()
-
 	psqlConfString := fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		cfg.PostgresHost,
@@ -65,20 +61,23 @@ func main() {
 		cfg.PostgresDatabase,
 	)
 
-	docs.SwaggerInfo.Title = cfg.App
-	docs.SwaggerInfo.Version = cfg.AppVersion
-
 	var err error
 	var stg storage.StorageInter
 	stg, err = postgres.InitDB(psqlConfString)
-
 	if err != nil {
 		panic(err)
 	}
 
+	initGRPC(stg)
+
+	fmt.Println("======================")
+
 	if cfg.Environment != "development" {
 		gin.SetMode(gin.ReleaseMode)
 	}
+
+	docs.SwaggerInfo.Title = cfg.App
+	docs.SwaggerInfo.Version = cfg.AppVersion
 
 	r := gin.New()
 

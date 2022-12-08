@@ -21,7 +21,7 @@ type CreateModelArticle struct {
 	AuthorID string `json:"author_id" binding:"required"`
 }
 
-type UpdateArticleResponse struct {
+type UpdateArticleModel struct {
 	ID string `json:"id" binding:"required"`
 	Content
 }

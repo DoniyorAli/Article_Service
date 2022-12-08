@@ -127,7 +127,7 @@ func (stg Postgres) GetArticleList(offset, limit int, search string) (dataset []
 }
 
 // *=========================================================================
-func (stg Postgres) UpdateArticle(box models.UpdateArticleResponse) error {
+func (stg Postgres) UpdateArticle(box models.UpdateArticleModel) error {
 	res, err := stg.homeDB.NamedExec("UPDATE article  SET title=:t, body=:b, updated_at=now() WHERE deleted_at IS NULL AND id=:id", map[string]interface{}{
 		"id": box.ID,
 		"t":  box.Title,
