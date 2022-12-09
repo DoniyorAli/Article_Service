@@ -33,7 +33,7 @@ func initGRPC(stg storage.StorageInter) {
 	
 	srv := grpc.NewServer()
 
-	authorService := &author.AuthorService{}
+	authorService := author.NewAuthorService(stg)
 	blogpost.RegisterAuthorServiceServer(srv, authorService)
 
 	articleService := article.NewArticleService(stg)
