@@ -72,18 +72,18 @@ func (s *authorService) GetAuthorByID(ctx context.Context, req *blogpost.GetAuth
 	}, nil
 }
 
-
 func (s *authorService) GetAuthorList(ctx context.Context, req *blogpost.GetAuthorListRequest) (*blogpost.GetAuthorListResponse, error) {
 	res := &blogpost.GetAuthorListResponse{
 		Authors: make([]*blogpost.Author, 0),
 	}
 
-	articleList, err := s.stg.GetAuthorList(int(req.Offset), int(req.Limit), req.Search)
+	authorList, err := s.stg.GetAuthorList(int(req.Offset), int(req.Limit), req.Search)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "s.stg.GetArticleList: %s", err.Error())
 	}
 	
-	for _, v := range articleList {
+	
+	for _, v := range authorList {
 
 		var updatedAt string 
 		if v.UpdateAt != nil {
@@ -98,12 +98,8 @@ func (s *authorService) GetAuthorList(ctx context.Context, req *blogpost.GetAuth
 			UpdatedAt: updatedAt,
 		})
 	}
-
 	return res, nil
 }
-
-
-
 
 func (s *authorService) UpdateAuthor(ctx context.Context, req *blogpost.UpdateAuthorRequest) (*blogpost.UpdateAuthorResponse, error) {
 
@@ -115,7 +111,6 @@ func (s *authorService) UpdateAuthor(ctx context.Context, req *blogpost.UpdateAu
 
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "s.stg.UpdateAuthor: %s", err.Error())
-
 	}
 
 	_, err = s.stg.GetAuthorById(req.Id)
@@ -129,15 +124,12 @@ func (s *authorService) UpdateAuthor(ctx context.Context, req *blogpost.UpdateAu
 	}, nil
 }
 
-
-
 func (s *authorService) DeleteAuthor(ctx context.Context, req *blogpost.DeleteAuthorRequest) (*blogpost.DeleteAuthorResponse, error) {
 
 	err := s.stg.DeleteAuthor(req.Id)
 
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "s.stg.DeleteAuthor: %s", err.Error())
-
 	}
 
 	return &blogpost.DeleteAuthorResponse{

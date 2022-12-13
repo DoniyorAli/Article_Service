@@ -13,7 +13,7 @@ type Config struct {
 	App string
 	AppVersion string
 	Environment string	// devlopment, staging, production
-	HTTPPort string
+	GRPCPort string
 
 	DefaultOffset string
 	DefaultLimit string
@@ -37,7 +37,7 @@ func Load() Config {
 	config.AppVersion = cast.ToString(getOrReturnDefaultValue("APP_VERSION", "1.0.0"))
 	config.Environment = cast.ToString(getOrReturnDefaultValue("ENVIRONMENT", "development"))
 
-	config.HTTPPort = cast.ToString(getOrReturnDefaultValue("HTTP_PORT", ":7070"))
+	config.GRPCPort = cast.ToString(getOrReturnDefaultValue("GRPC_PORT", ":7001"))
 
 	config.DefaultOffset = cast.ToString(getOrReturnDefaultValue("DEFAULT_OFFSET", "article"))
 	config.DefaultLimit = cast.ToString(getOrReturnDefaultValue("DEFAULT_LIMIT", "1.0.0"))

@@ -97,11 +97,13 @@ func (stg Postgres) GetAuthorList(offset, limit int, search string) ([]models.Au
 		if err != nil {
 			return res, err
 		}
-		res = append(res, author)
-
 		if tempMiddlename != nil {
 			author.Middlename = *tempMiddlename
 		}
+		res = append(res, author)
+
+		
+
 
 	}
 	return res, err

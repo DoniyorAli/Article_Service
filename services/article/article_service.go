@@ -5,8 +5,8 @@ import (
 	blogpost "UacademyGo/Blogpost/article_service/protogen/blogpost"
 	"UacademyGo/Blogpost/article_service/storage"
 	"context"
+	"fmt"
 	"log"
-
 
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
@@ -145,6 +145,8 @@ func (s *articleService) DeleteArticle(ctx context.Context, req *blogpost.Delete
 //?==============================================================================================================
 
 func (s *articleService) GetArticleList(ctx context.Context, req *blogpost.GetArticleListRequest) (*blogpost.GetArticleListResponse, error) {
+	fmt.Println("======GetArticleList======")
+
 	res := &blogpost.GetArticleListResponse{
 		Articles: make([]*blogpost.Article, 0), //?????????????????????????
 	}
@@ -186,7 +188,7 @@ func (s *articleService) GetArticleByID(ctx context.Context, req *blogpost.GetAr
 	}
 
 	if article.DeletedAt != nil {
-		return nil, status.Errorf(codes.NotFound, "s.stg.GetArticleById: %s", err.Error())
+		return nil, status.Errorf(codes.NotFound, "s.stg.GetArticleById: article with ID:%s not found", req.Id)
 	}
 
 	var updatedAt string
