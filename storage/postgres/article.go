@@ -1,16 +1,21 @@
 package postgres
 
 import (
-	"UacademyGo/Blogpost/article_service/models"
+	"UacademyGo/Blogpost/article_service/protogen/blogpost"
 	"errors"
+	"time"
 )
 
 // *=========================================================================
-func (stg Postgres) AddNewArticle(id string, box models.CreateModelArticle) error {
+func (stg Postgres) AddNewArticle(id string, box  *blogpost.CreateArticleRequest) error {
 	var err error
-	_, err = stg.GetAuthorById(box.AuthorID)
+	_, err = stg.GetAuthorById(box.AuthorId)
 	if err != nil {
 		return err
+	}
+
+	if box.Content == nil {
+		box.Content = &blogpost.Content{}
 	}
 
 	_, err = stg.homeDB.Exec(`INSERT INTO article 
@@ -26,9 +31,9 @@ func (stg Postgres) AddNewArticle(id string, box models.CreateModelArticle) erro
 		$4
 	)`,
 		id,
-		box.Title,
-		box.Body,
-		box.AuthorID,
+		box.Content.Title,
+		box.Content.Body,
+		box.AuthorId,
 	)
 	if err != nil {
 		return err
@@ -37,8 +42,14 @@ func (stg Postgres) AddNewArticle(id string, box models.CreateModelArticle) erro
 }
 
 // *=========================================================================
-func (stg Postgres) GetArticleById(id string) (models.GetByIDArticleModel, error) {
-	var a models.GetByIDArticleModel
+func (stg Postgres) GetArticleById(id string) (*blogpost.GetArticleByIDResponse, error) {
+	res := &blogpost.GetArticleByIDResponse{
+		Content: &blogpost.Content{},
+		Author: &blogpost.GetArticleByIDResponse_Author{},
+	}
+	var deletedAt *time.Time
+
+	var updatedAt, authorUpdatedAt *string
 
 	var tempMiddlename *string
 
@@ -48,90 +59,104 @@ func (stg Postgres) GetArticleById(id string) (models.GetByIDArticleModel, error
 		ar.body,
 		ar.created_at,
 		ar.updated_at,
-		ar.deleted_at,
 		au.id,
 		au.fullname,
 		au.middlename,
 		au.created_at,
-		au.updated_at,
-		au.deleted_at
+		au.updated_at
     FROM article AS ar JOIN author AS au ON ar.author_id = au.id WHERE ar.id = $1`, id).Scan(
-		&a.ID,
-		&a.Title,
-		&a.Body,
-		&a.CreateAt,
-		&a.UpdateAt,
-		&a.DeletedAt,
-		&a.Author.ID,
-		&a.Author.Fullname,
+		&res.Id,
+		&res.Content.Title,
+		&res.Content.Body,
+		&res.CreatedAt,
+		&updatedAt,
+		&res.Author.Id,
+		&res.Author.Fullname,
 		&tempMiddlename,
-		&a.Author.CreateAt,
-		&a.Author.UpdateAt,
-		&a.Author.DeletedAt,
+		&res.Author.CreatedAt,
+		&authorUpdatedAt,
 	)
 	if err != nil {
-		return a, err
+		return res, err
 	}
 
-	if tempMiddlename == nil {
-		a.Author.Middlename = ""
-	} else {
-		a.Author.Middlename = *tempMiddlename
+	if updatedAt != nil {
+		res.UpdatedAt = *updatedAt
 	}
 
-	// if tempMiddlename != nil {
-	// 	a.Author.Middlename = *tempMiddlename
-	// }
+	if authorUpdatedAt != nil {
+		res.Author.UpdatedAt = *authorUpdatedAt
+	}
 
-	return a, nil
+	if tempMiddlename != nil {
+		res.Author.Middlename = *tempMiddlename
+	}
+
+	if deletedAt != nil {
+		return res, errors.New("article not found")
+	}
+
+	return res, err
 }
 
 // *=========================================================================
-func (stg Postgres) GetArticleList(offset, limit int, search string) (dataset []models.Article, err error) {
-
+func (stg Postgres) GetArticleList(offset, limit int, search string) (*blogpost.GetArticleListResponse, error) {
+	res := &blogpost.GetArticleListResponse{
+		Articles: make([]*blogpost.Article, 0),
+	}
 	rows, err := stg.homeDB.Queryx(`SELECT
 	id,
 	title,
 	body,
 	author_id,
 	created_at,
-	updated_at,
-	deleted_at 
+	updated_at
 	FROM article WHERE deleted_at IS NULL AND ((title ILIKE '%' || $1 || '%') OR (body ILIKE '%' || $1 || '%'))
 	LIMIT $2
 	OFFSET $3
 	`, search, limit, offset)
 
 	if err != nil {
-		return dataset, err
+		return res, err
 	}
 
 	for rows.Next() {
-		var a models.Article
+		 a := &blogpost.Article{
+			Content: &blogpost.Content{},
+		}
+
+		var updatedAt *string
 
 		err := rows.Scan(
-			&a.ID,
-			&a.Title,
-			&a.Body,
-			&a.AuthorID,
-			&a.CreateAt,
-			&a.UpdateAt,
-			&a.DeletedAt,
+			&a.Id,
+			&a.Content.Title,
+			&a.Content.Body,
+			&a.AuthorId,
+			&a.CreatedAt,
+			&updatedAt,
 		)
 		if err != nil {
-			return dataset, err
+			return res, err
 		}
-		dataset = append(dataset, a)
+
+		if updatedAt != nil {
+			a.UpdatedAt = *updatedAt
+		}
+
+		res.Articles = append(res.Articles, a)
 	}
-	return dataset, err
+	return res, err
 }
 
 // *=========================================================================
-func (stg Postgres) UpdateArticle(box models.UpdateArticleModel) error {
+func (stg Postgres) UpdateArticle(box *blogpost.UpdateArticleRequest) error {
+	if box.Content == nil {
+		box.Content = &blogpost.Content{}
+	}
 	res, err := stg.homeDB.NamedExec("UPDATE article  SET title=:t, body=:b, updated_at=now() WHERE deleted_at IS NULL AND id=:id", map[string]interface{}{
-		"id": box.ID,
-		"t":  box.Title,
-		"b":  box.Body,
+		"id": box.Id,
+		"t":  box.Content.Title,
+		"b":  box.Content.Body,
 	})
 	if err != nil {
 		return err

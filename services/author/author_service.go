@@ -1,7 +1,6 @@
 package author
 
 import (
-	"UacademyGo/Blogpost/article_service/models"
 	blogpost "UacademyGo/Blogpost/article_service/protogen/blogpost"
 	"UacademyGo/Blogpost/article_service/storage"
 	"context"
@@ -36,10 +35,8 @@ func (s *authorService) Ping(ctx context.Context, req *blogpost.Empty) (*blogpos
 func (s *authorService) CreateAuthor(ctx context.Context, req *blogpost.CreateAuthorRequest) (*blogpost.CreateAuthorResponse, error) {
 	id := uuid.New()
 
-	err := s.stg.AddAuthor(id.String(), models.CreateModelAuthor{
-		Fullname: req.Fullname,
-		Middlename: req.Middlename,
-	})
+	err := s.stg.AddAuthor(id.String(), req)
+
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "s.stg.CreateAuthor: %s", err.Error())
 	}
@@ -50,7 +47,7 @@ func (s *authorService) CreateAuthor(ctx context.Context, req *blogpost.CreateAu
 	}
 
 	return &blogpost.CreateAuthorResponse{
-		Id:	res.ID,
+		Id: res.Id,
 	}, nil
 }
 
@@ -59,55 +56,21 @@ func (s *authorService) GetAuthorByID(ctx context.Context, req *blogpost.GetAuth
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "s.stg.GetAuthorById: %s", err.Error())
 	}
-	var updated_at string
-	if author.UpdateAt !=nil{
-		updated_at=author.UpdateAt.String()
-	}
-	return &blogpost.Author{
-		Id:	author.ID,
-		Fullname:author.Fullname,
-		Middlename: author.Middlename,
-		CreatedAt: author.CreateAt.String(),
-		UpdatedAt: updated_at,
-	}, nil
+	return author, nil
 }
 
 func (s *authorService) GetAuthorList(ctx context.Context, req *blogpost.GetAuthorListRequest) (*blogpost.GetAuthorListResponse, error) {
-	res := &blogpost.GetAuthorListResponse{
-		Authors: make([]*blogpost.Author, 0),
-	}
-
-	authorList, err := s.stg.GetAuthorList(int(req.Offset), int(req.Limit), req.Search)
+	res, err := s.stg.GetAuthorList(int(req.Offset), int(req.Limit), req.Search)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "s.stg.GetArticleList: %s", err.Error())
 	}
 	
-	
-	for _, v := range authorList {
-
-		var updatedAt string 
-		if v.UpdateAt != nil {
-			updatedAt = v.UpdateAt.String()
-		}
-
-		res.Authors = append(res.Authors, &blogpost.Author{
-			Id: v.ID,
-			Fullname: v.Fullname,
-			Middlename: v.Middlename,
-			CreatedAt: v.CreateAt.String(),
-			UpdatedAt: updatedAt,
-		})
-	}
 	return res, nil
 }
 
 func (s *authorService) UpdateAuthor(ctx context.Context, req *blogpost.UpdateAuthorRequest) (*blogpost.UpdateAuthorResponse, error) {
 
-	err := s.stg.UpdateAuthor(models.UpdateAuthorResponse{
-		ID: req.Id,
-		Fullname: req.Fullname,
-		Middlename: req.Middlename,
-	})
+	err := s.stg.UpdateAuthor(req)
 
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "s.stg.UpdateAuthor: %s", err.Error())

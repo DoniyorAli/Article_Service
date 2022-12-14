@@ -1,11 +1,12 @@
 package postgres
 
 import (
-	"UacademyGo/Blogpost/article_service/models"
+	"UacademyGo/Blogpost/article_service/protogen/blogpost"
+	"database/sql"
 	"errors"
 )
 
-func (stg Postgres) AddAuthor(id string, box models.CreateModelAuthor) error {
+func (stg Postgres) AddAuthor(id string, box *blogpost.CreateAuthorRequest) error {
 	_, err := stg.homeDB.Exec(`INSERT INTO author 
 	(
 		id,
@@ -31,9 +32,11 @@ func (stg Postgres) AddAuthor(id string, box models.CreateModelAuthor) error {
 }
 
 // *=========================================================================
-func (stg Postgres) GetAuthorById(id string) (models.Author, error) {
-	var author models.Author
+func (stg Postgres) GetAuthorById(id string) (*blogpost.Author, error) {
+	author := &blogpost.Author{}
+	var updatedAt *string
 	var tempMiddlename *string
+	var deletedAt sql.NullString
 	err := stg.homeDB.QueryRow(`SELECT 
 		id,
 		fullname,
@@ -42,27 +45,35 @@ func (stg Postgres) GetAuthorById(id string) (models.Author, error) {
 		updated_at,
 		deleted_at
     FROM author WHERE id = $1 AND deleted_at IS NULL`, id).Scan(
-		&author.ID,
+		&author.Id,
 		&author.Fullname,
 		&tempMiddlename,
-		&author.CreateAt,
-		&author.UpdateAt,
-		&author.DeletedAt,
+		&author.CreatedAt,
+		&updatedAt,
+		&deletedAt,
 	)
 	if err != nil {
 		return author, err
+	}
+
+	if updatedAt != nil {
+		author.UpdatedAt = *updatedAt
 	}
 
 	if tempMiddlename != nil {
 		author.Middlename = *tempMiddlename
 	}
 
+	author.DeletedAt = deletedAt.String
+
 	return author, nil
 }
 
 // *=========================================================================
-func (stg Postgres) GetAuthorList(offset, limit int, search string) ([]models.Author, error) {
-	var res []models.Author
+func (stg Postgres) GetAuthorList(offset, limit int, search string) (*blogpost.GetAuthorListResponse, error) {
+	res := &blogpost.GetAuthorListResponse{
+		Authors: make([]*blogpost.Author, 0),
+	}
 	var tempMiddlename *string
 	rows, err := stg.homeDB.Queryx(`SELECT 
 		id,
@@ -85,13 +96,13 @@ func (stg Postgres) GetAuthorList(offset, limit int, search string) ([]models.Au
 	}
 
 	for rows.Next() {
-		var author models.Author
+		var author blogpost.Author
 		err := rows.Scan(
-			&author.ID,
+			&author.Id,
 			&author.Fullname,
 			&tempMiddlename,
-			&author.CreateAt,
-			&author.UpdateAt,
+			&author.CreatedAt,
+			&author.UpdatedAt,
 			&author.DeletedAt,
 		)
 		if err != nil {
@@ -100,20 +111,17 @@ func (stg Postgres) GetAuthorList(offset, limit int, search string) ([]models.Au
 		if tempMiddlename != nil {
 			author.Middlename = *tempMiddlename
 		}
-		res = append(res, author)
-
-		
-
+		res.Authors = append(res.Authors, &author)
 
 	}
 	return res, err
 }
 
 // *=========================================================================
-func (stg Postgres) UpdateAuthor(box models.UpdateAuthorResponse) error {
+func (stg Postgres) UpdateAuthor(box *blogpost.UpdateAuthorRequest) error {
 
 	res, err := stg.homeDB.NamedExec("UPDATE author  SET fullname=:f, middlename=:m, updated_at=now() WHERE deleted_at IS NULL AND id=:id", map[string]interface{}{
-		"id": box.ID,
+		"id": box.Id,
 		"f":  box.Fullname,
 		"m":  box.Middlename,
 	})

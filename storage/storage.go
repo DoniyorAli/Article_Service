@@ -1,18 +1,20 @@
 package storage
 
-import "UacademyGo/Blogpost/article_service/models"
+import (
+	"UacademyGo/Blogpost/article_service/protogen/blogpost"
+)
 
 type StorageInter interface {
 	//* Article
-	AddNewArticle(id string, box models.CreateModelArticle) error
-	GetArticleById(id string) (models.GetByIDArticleModel, error)
-	GetArticleList(offset, limit int, search string) (dataset []models.Article, err error)
-	UpdateArticle(box models.UpdateArticleModel) error
+	AddNewArticle(id string, box *blogpost.CreateArticleRequest) error
+	GetArticleById(id string) (*blogpost.GetArticleByIDResponse, error)
+	GetArticleList(offset, limit int, search string) (dataset *blogpost.GetArticleListResponse, err error)
+	UpdateArticle(box *blogpost.UpdateArticleRequest) error
 	DeleteArticle(id string) error
 	//* Author
-	AddAuthor(id string, box models.CreateModelAuthor) error
-	GetAuthorById(id string) (models.Author, error)
-	GetAuthorList(limit, offset int, search string) (dataset []models.Author, err error)
-	UpdateAuthor(box models.UpdateAuthorResponse) error
+	AddAuthor(id string, box *blogpost.CreateAuthorRequest) error
+	GetAuthorById(id string) (*blogpost.Author, error)
+	GetAuthorList(limit, offset int, search string) (dataset *blogpost.GetAuthorListResponse, err error)
+	UpdateAuthor(box *blogpost.UpdateAuthorRequest) error
 	DeleteAuthor(id string) error
 }
