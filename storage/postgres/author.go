@@ -75,6 +75,8 @@ func (stg Postgres) GetAuthorList(offset, limit int, search string) (*blogpost.G
 		Authors: make([]*blogpost.Author, 0),
 	}
 	var tempMiddlename *string
+	var updatedAt *string
+	var deletedAt *string
 	rows, err := stg.homeDB.Queryx(`SELECT 
 		id,
 		fullname,
@@ -102,12 +104,20 @@ func (stg Postgres) GetAuthorList(offset, limit int, search string) (*blogpost.G
 			&author.Fullname,
 			&tempMiddlename,
 			&author.CreatedAt,
-			&author.UpdatedAt,
-			&author.DeletedAt,
+			&updatedAt,
+			&deletedAt,
 		)
 		if err != nil {
 			return res, err
 		}
+
+		if updatedAt != nil {
+			author.UpdatedAt = *updatedAt
+		}
+		if deletedAt != nil {
+			author.DeletedAt = *deletedAt
+		}
+
 		if tempMiddlename != nil {
 			author.Middlename = *tempMiddlename
 		}

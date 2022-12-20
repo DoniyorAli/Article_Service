@@ -62,7 +62,7 @@ func (s *authorService) GetAuthorByID(ctx context.Context, req *blogpost.GetAuth
 func (s *authorService) GetAuthorList(ctx context.Context, req *blogpost.GetAuthorListRequest) (*blogpost.GetAuthorListResponse, error) {
 	res, err := s.stg.GetAuthorList(int(req.Offset), int(req.Limit), req.Search)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "s.stg.GetArticleList: %s", err.Error())
+		return nil, status.Errorf(codes.Internal, "s.stg.GetAuthorList: %s", err.Error())
 	}
 	
 	return res, nil
